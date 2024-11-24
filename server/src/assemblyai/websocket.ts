@@ -1,8 +1,9 @@
 import WebSocket from 'ws';
 import fs from 'fs';
 import { AssemblyAI } from 'assemblyai';
+import { EventEmitter } from 'events';
 
-class AssemblyAIWebSocket {
+export class AssemblyAIWebSocket extends EventEmitter {
     private socket: WebSocket | null = null;
     private state: string = 'idle';
     private transcriptText: string = '';
@@ -10,6 +11,7 @@ class AssemblyAIWebSocket {
     private client: AssemblyAI;
 
     constructor(private sampleRate: number = 8000, apiKey: string) {
+        super();
         this.client = new AssemblyAI({ apiKey });
     }
 
@@ -33,20 +35,20 @@ class AssemblyAIWebSocket {
         this.socket.onopen = this.handleOpen.bind(this);
     }
 
-    private async handleMessage(message: WebSocket.MessageEvent): Promise<void> {
+    private handleMessage(message: WebSocket.MessageEvent): void {
         const res = JSON.parse(message.data.toString());
 
         if (res.message_type === 'PartialTranscript') {
-            console.log('Partial Text:', res.text);
+            this.emit('partialTranscript', res.text);
         }
         if (res.message_type === 'FinalTranscript') {
-            console.log('Final Text:', res.text);
+            this.emit('finalTranscript', res.text);
             this.transcriptText += res.text + ' ';
         }
 
         if (res.message_type === 'SessionBegins') {
-            console.log('Session Begins');
-            await this.sendAudioData();
+            this.emit('sessionBegin');
+            this.sendAudioData();
         }
     }
 

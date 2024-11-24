@@ -2,8 +2,10 @@
   "name": "echolearn",
   "version": "0.1.0",
   "private": true,
+  
   "scripts": {
     "dev": "next dev",
+    "start:ws": "ts-node server/websocket-server.ts",
     "build": "next build",
     "start": "next start",
     "lint": "next lint"
@@ -78,6 +80,7 @@
     "eslint-config-next": "13.5.1",
     "postcss": "8.4.30",
     "tailwindcss": "3.3.3",
-    "typescript": "5.2.2"
+    "typescript": "5.2.2",
+    "webpack-node-externals": "^3.0.0"
   }
 }

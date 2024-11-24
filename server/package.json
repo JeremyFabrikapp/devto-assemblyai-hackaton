@@ -1,0 +1,27 @@
+{
+  "name": "js_server",
+  "scripts": {
+    "dev": "tsx watch src/index.ts"
+  },
+  "dependencies": {
+    "@hono/node-server": "^1.13.1",
+    "@hono/node-ws": "^1.0.4",
+    "@langchain/community": "^0.3.4",
+    "@langchain/core": "^0.3.7",
+    "assemblyai": "^4.8.0",
+    "audio-decode": "^2.2.2",
+    "clipboardy": "^4.0.0",
+    "dotenv": "^16.4.5",
+    "hono": "^4.6.3",
+    "wav": "^1.0.2",
+    "ws": "^8.18.0",
+    "zod": "^3.23.8",
+    "zod-to-json-schema": "^3.23.3"
+  },
+  "devDependencies": {
+    "@types/node": "^20.11.17",
+    "@types/wav": "^1.0.4",
+    "@types/ws": "^8.5.12",
+    "tsx": "^4.7.1"
+  }
+}
