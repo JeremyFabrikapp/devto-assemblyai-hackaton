@@ -33,6 +33,10 @@ recordButton.addEventListener('click', async () => {
     }
 
     try {
+      console.log('Starting recording with sources:', {
+        tab: tabAudioCheckbox.checked,
+        mic: micAudioCheckbox.checked
+      });
       chrome.runtime.sendMessage({
         action: 'startRecording',
         sources: {
@@ -63,5 +67,5 @@ chrome.runtime.onMessage.addListener((message) => {
 });
 
 // Initial setup
-updateStatus('Ready to record', 'connected');
+updateStatus('Ready to record !', 'connected');
 validateSources();
