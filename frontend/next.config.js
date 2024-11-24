@@ -6,6 +6,9 @@ const nextConfig = {
   eslint: {
     ignoreDuringBuilds: true,
   },
+  experimental: {
+    serverActions: true,
+  },
   // webpack: (config, { isServer }) => {
   //   if (!isServer) {
   //     // config.target = "node"

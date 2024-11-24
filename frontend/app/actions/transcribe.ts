@@ -1,4 +1,4 @@
-'use server'
+"use server";
 
 import { transcribeAudio, runLemurTask, summarizeTranscript, askQuestions, generateActionItems } from '@/providers/assemblyai/api';
 import { Transcript, LemurTaskResponse, LemurSummaryResponse, LemurQuestionAnswerResponse, LemurActionItemsResponse } from 'assemblyai';

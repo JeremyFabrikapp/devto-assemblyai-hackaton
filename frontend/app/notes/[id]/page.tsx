@@ -12,6 +12,7 @@ export function generateStaticParams() {
   ];
 }
 
-export default function NotePage({ params }: { params: { id: string } }) {
+export default async function NotePage(props: { params: Promise<{ id: string }> }) {
+  const params = await props.params;
   return <NoteDetail id={params.id} />;
 }
