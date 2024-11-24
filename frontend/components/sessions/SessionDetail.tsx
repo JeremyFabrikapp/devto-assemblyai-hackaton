@@ -8,7 +8,8 @@ import { TranscriptAndNotes } from './TranscriptAndNotes';
 import { SessionInfo } from './SessionInfo';
 import { NoteGenerator } from './NoteGenerator';
 import { QuickActions } from './QuickActions';
-// import { useAssembly } from '@/hooks/use-assembly';
+import { useAssembly } from '@/hooks/use-assembly';
+import { transcribe } from '@/app/actions/transcribe';
 // import { transcribeAudio } from '@/provider/assemblyai/api';
 
 interface SessionDetailProps {
@@ -37,6 +38,36 @@ export default function SessionDetail({ id }: SessionDetailProps) {
   const [generatedNotes, setGeneratedNotes] = useState<GeneratedNote[]>([]);
   const [transcript, setTranscript] = useState(mockSession.transcript);
   const session = useSessionStore((state) => state.sessions.find((s) => s.id === id)) || mockSession;
+
+  const [isTranscribing, setIsTranscribing] = useState(false);
+  const [transcriptionError, setTranscriptionError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const fetchTranscript = async () => {
+      setIsTranscribing(true);
+      setTranscriptionError(null);
+      try {
+        const result = await transcribe(session.audioFile);
+        if (result && result.words) {
+          const formattedTranscript = result.words.map((word, index) => ({
+            id: index,
+            speaker: word.speaker || 'Unknown',
+            text: word.text,
+            timestamp: `${word.start}`
+          }));
+          setTranscript(formattedTranscript);
+        }
+      } catch (error) {
+        console.error('Error fetching transcript:', error);
+        setTranscriptionError('Failed to transcribe audio. Please try again.');
+      } finally {
+        setIsTranscribing(false);
+      }
+    };
+
+    fetchTranscript();
+  }, [session.audioFile]);
+
   // const { transcribeAudio, isLoading, error } = useAssembly();
 
   // useEffect(() => {

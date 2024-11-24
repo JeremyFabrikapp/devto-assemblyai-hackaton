@@ -6,14 +6,14 @@ const nextConfig = {
   eslint: {
     ignoreDuringBuilds: true,
   },
-  webpack: (config, { isServer }) => {
-    if (!isServer) {
-      config.target = "node"
-      config.externals = [nodeExternals()];
-    }
+  // webpack: (config, { isServer }) => {
+  //   if (!isServer) {
+  //     // config.target = "node"
+  //     // config.externals = [nodeExternals()];
+  //   }
 
-    return config;
-  },
+  //   return config;
+  // },
   images: { unoptimized: true },
 };
 
