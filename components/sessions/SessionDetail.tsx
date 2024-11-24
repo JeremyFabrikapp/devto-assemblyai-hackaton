@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -27,6 +27,7 @@ import {
   AudioWaveform,
   Sparkles
 } from 'lucide-react';
+import { useSessionStore } from '@/lib/stores/sessions.store';
 
 interface SessionDetailProps {
   id: string;
@@ -53,6 +54,60 @@ export default function SessionDetail({ id }: SessionDetailProps) {
   const [activeTab, setActiveTab] = useState('transcript');
   const [customInstruction, setCustomInstruction] = useState('');
   const [generatedNotes, setGeneratedNotes] = useState<GeneratedNote[]>([]);
+  const session = useSessionStore((state) => state.getSession(id));
+  const audioRef = useRef<HTMLAudioElement | null>(null);
+
+  useEffect(() => {
+    if (session && session.audioFile) {
+      audioRef.current = new Audio(session.audioFile);
+      audioRef.current.addEventListener('timeupdate', () => {
+        setCurrentTime(audioRef.current?.currentTime || 0);
+      });
+      audioRef.current.addEventListener('ended', () => {
+        setIsPlaying(false);
+      });
+    }
+
+    return () => {
+      if (audioRef.current) {
+        audioRef.current.pause();
+        audioRef.current.removeEventListener('timeupdate', () => {});
+        audioRef.current.removeEventListener('ended', () => {});
+      }
+    };
+  }, [session]);
+
+  const togglePlayPause = () => {
+    if (audioRef.current) {
+      if (isPlaying) {
+        audioRef.current.pause();
+      } else {
+        audioRef.current.play();
+      }
+      setIsPlaying(!isPlaying);
+    }
+  };
+
+  const handleSeek = (newTime: number) => {
+    if (audioRef.current) {
+      audioRef.current.currentTime = newTime;
+      setCurrentTime(newTime);
+    }
+  };
+
+  const handleVolumeChange = (newVolume: number[]) => {
+    if (audioRef.current) {
+      audioRef.current.volume = newVolume[0] / 100;
+      setVolume(newVolume);
+    }
+  };
+
+  useEffect(() => {
+    if (session && session.audioFile) {
+      console.log('Audio file URL:', session.audioFile);
+      // You can perform additional actions here if needed
+    }
+  }, [session]);
 
   const transcript: TranscriptSegment[] = [
     {
@@ -118,14 +173,36 @@ export default function SessionDetail({ id }: SessionDetailProps) {
                   <AudioWaveform className="h-20 w-20 text-muted-foreground" />
                 </div>
                 
+                <audio
+                  ref={audioRef}
+                  src={session?.audioFile}
+                  onTimeUpdate={() => setCurrentTime(audioRef?.current?.currentTime || 0)}
+                  onEnded={() => setIsPlaying(false)}
+                />
+                
                 <div className="flex items-center justify-center gap-4">
-                  <Button variant="outline" size="icon">
+                  <Button 
+                    variant="outline" 
+                    size="icon"
+                    onClick={() => {
+                      if (audioRef?.current) {
+                        audioRef.current.currentTime -= 10;
+                      }
+                    }}
+                  >
                     <Rewind className="h-4 w-4" />
                   </Button>
                   <Button 
                     variant="outline" 
                     size="icon"
-                    onClick={() => setIsPlaying(!isPlaying)}
+                    onClick={() => {
+                      if (isPlaying) {
+                        audioRef?.current?.pause();
+                      } else {
+                        audioRef?.current?.play();
+                      }
+                      setIsPlaying(!isPlaying);
+                    }}
                   >
                     {isPlaying ? (
                       <Pause className="h-4 w-4" />
@@ -133,7 +210,15 @@ export default function SessionDetail({ id }: SessionDetailProps) {
                       <Play className="h-4 w-4" />
                     )}
                   </Button>
-                  <Button variant="outline" size="icon">
+                  <Button 
+                    variant="outline" 
+                    size="icon"
+                    onClick={() => {
+                      if (audioRef?.current) {
+                        audioRef.current.currentTime += 10;
+                      }
+                    }}
+                  >
                     <FastForward className="h-4 w-4" />
                   </Button>
                 </div>
@@ -142,7 +227,12 @@ export default function SessionDetail({ id }: SessionDetailProps) {
                   <Volume2 className="h-4 w-4" />
                   <Slider
                     value={volume}
-                    onValueChange={setVolume}
+                    onValueChange={(newVolume) => {
+                      setVolume(newVolume);
+                      if (audioRef?.current) {
+                        audioRef.current.volume = newVolume[0] / 100;
+                      }
+                    }}
                     max={100}
                     step={1}
                   />

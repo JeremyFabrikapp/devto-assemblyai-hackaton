@@ -2,7 +2,7 @@
 
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
-import { Note } from './types';
+import { Note } from '../types';
 
 interface NoteState {
   notes: Note[];

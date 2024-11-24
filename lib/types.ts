@@ -6,6 +6,7 @@ export interface Session {
     transcript: TranscriptSegment[];
     notes: GeneratedNote[];
     status: 'active' | 'completed';
+    audioFile: string;
 }
 
 export interface TranscriptSegment {

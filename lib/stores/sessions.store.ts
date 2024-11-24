@@ -2,7 +2,7 @@
 
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
-import { Session } from './types';
+import { Session } from '../types';
 
 interface SessionState {
   sessions: Session[];

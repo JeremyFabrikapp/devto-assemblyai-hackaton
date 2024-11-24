@@ -54,3 +54,4 @@ logs
 
 # Yarn Integrity file
 .yarn-integrity
+.env

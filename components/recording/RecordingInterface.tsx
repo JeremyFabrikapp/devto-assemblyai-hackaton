@@ -15,7 +15,7 @@ import {
   Save,
   Settings,
   Volume2,
-  Waveform,
+  AudioWaveform as Waveform,
   FileText
 } from 'lucide-react';
 import { useToast } from '@/components/ui/use-toast';

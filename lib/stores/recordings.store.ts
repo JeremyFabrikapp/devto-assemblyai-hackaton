@@ -2,7 +2,7 @@
 
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
-import { Recording, TranscriptSegment } from './types';
+import { Recording, TranscriptSegment } from '../types';
 
 interface RecordingState {
   currentRecording: Recording | null;

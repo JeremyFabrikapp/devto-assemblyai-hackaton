@@ -7,7 +7,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/components/ui/use-toast';
-import { Mic, MicOff, Save, X, Waveform } from 'lucide-react';
+import { Mic, MicOff, Save, X, AudioWaveform } from 'lucide-react';
 
 export default function NewNotePage() {
   const [title, setTitle] = useState('');
@@ -108,7 +108,7 @@ export default function NewNotePage() {
                   
                   {isRecording && (
                     <div className="h-24 bg-muted rounded-lg flex items-center justify-center mb-4">
-                      <Waveform className="h-16 w-16 text-muted-foreground animate-pulse" />
+                      <AudioWaveform className="h-16 w-16 text-muted-foreground animate-pulse" />
                     </div>
                   )}
 
