@@ -1,71 +1,59 @@
 let isRecording = false;
-const statusIndicator = document.getElementById('statusIndicator');
-const recordButton = document.getElementById('recordButton');
-const tabAudioCheckbox = document.getElementById('tabAudio');
-const micAudioCheckbox = document.getElementById('micAudio');
-const lastSubtitle = document.getElementById('lastSubtitle');
 
-function updateStatus(message, type) {
-  statusIndicator.textContent = message;
-  statusIndicator.className = `status ${type}`;
-}
+document.addEventListener('DOMContentLoaded', () => {
+  const toggleButton = document.getElementById('recordButton');
+  const wsUrlInput = document.getElementById('wsUrl');
+  const statusDiv = document.getElementById('statusIndicator');
 
-function updateButton(recording) {
-  const buttonText = recording ? 'Stop Recording' : 'Start Recording';
-  recordButton.querySelector('.button-text').textContent = buttonText;
-}
+  toggleButton.addEventListener('click', async () => {
+    if (!isRecording) {
+      const wsUrl = wsUrlInput.value;
+      if (!wsUrl) {
+        statusDiv.textContent = 'Please enter a WebSocket URL';
+        statusDiv.className = 'status error';
+        return;
+      }
 
-function validateSources() {
-  const hasSource = tabAudioCheckbox.checked || micAudioCheckbox.checked;
-  recordButton.disabled = !hasSource;
-  return hasSource;
-}
-
-[tabAudioCheckbox, micAudioCheckbox].forEach(checkbox => {
-  checkbox.addEventListener('change', validateSources);
-});
-
-recordButton.addEventListener('click', async () => {
-  if (!isRecording) {
-    if (!validateSources()) {
-      updateStatus('Please select at least one audio source', 'error');
-      return;
-    }
-
-    try {
-      console.log('Starting recording with sources:', {
-        tab: tabAudioCheckbox.checked,
-        mic: micAudioCheckbox.checked
-      });
-      chrome.runtime.sendMessage({
-        action: 'startRecording',
-        sources: {
-          tab: tabAudioCheckbox.checked,
-          mic: micAudioCheckbox.checked
+      chrome.runtime.sendMessage(
+        { type: 'START_RECORDING', wsUrl },
+        (response) => {
+          if (response.status === 'started') {
+            isRecording = true;
+            toggleButton.querySelector('.button-text').textContent = 'Stop Recording';
+            statusDiv.textContent = 'Recording...';
+            statusDiv.className = 'status recording';
+          }
         }
-      });
-      isRecording = true;
-      updateButton(true);
-      updateStatus('Recording in progress...', 'recording');
-    } catch (error) {
-      updateStatus('Failed to start recording: ' + error.message, 'error');
+      );
+    } else {
+      chrome.runtime.sendMessage(
+        { type: 'STOP_RECORDING' },
+        (response) => {
+          if (response.status === 'stopped') {
+            isRecording = false;
+            toggleButton.querySelector('.button-text').textContent = 'Start Recording';
+            statusDiv.textContent = 'Ready';
+            statusDiv.className = 'status connected';
+          }
+        }
+      );
     }
-  } else {
-    chrome.runtime.sendMessage({ action: 'stopRecording' });
-    isRecording = false;
-    updateButton(false);
-    updateStatus('Recording stopped', 'connected');
-  }
+  });
 });
 
+// Listen for error messages from background script
 chrome.runtime.onMessage.addListener((message) => {
-  if (message.type === 'status') {
-    updateStatus(message.content, message.status);
+  if (message.type === 'ERROR') {
+    const statusDiv = document.getElementById('statusIndicator');
+    statusDiv.textContent = `Error: ${message.error}`;
+    statusDiv.className = 'status error';
   } else if (message.type === 'subtitle') {
+    const lastSubtitle = document.getElementById('lastSubtitle');
     lastSubtitle.textContent = message.text;
   }
 });
 
 // Initial setup
-updateStatus('Ready to record !', 'connected');
-validateSources();
+const statusDiv = document.getElementById('statusIndicator');
+statusDiv.textContent = 'Ready to record!';
+statusDiv.className = 'status connected';
