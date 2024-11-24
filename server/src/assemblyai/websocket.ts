@@ -15,7 +15,7 @@ export class AssemblyAIWebSocket extends EventEmitter {
         this.client = new AssemblyAI({ apiKey });
     }
 
-    private initializeWebSocket(): void {
+    public initializeWebSocket(): void {
         const url = `wss://api.assemblyai.com/v2/realtime/ws?sample_rate=${this.sampleRate}`;
         this.socket = new WebSocket(url, {
             headers: {
@@ -37,6 +37,7 @@ export class AssemblyAIWebSocket extends EventEmitter {
 
     private handleMessage(message: WebSocket.MessageEvent): void {
         const res = JSON.parse(message.data.toString());
+        console.log('Received message from AssemblyAI:', res);
 
         if (res.message_type === 'PartialTranscript') {
             this.emit('partialTranscript', res.text);
@@ -48,7 +49,10 @@ export class AssemblyAIWebSocket extends EventEmitter {
 
         if (res.message_type === 'SessionBegins') {
             this.emit('sessionBegin');
-            this.sendAudioData();
+            console.log('Session began with AssemblyAI');
+            console.log('Sample rate:', this.sampleRate);
+            console.log('WebSocket connection established');
+            // this.sendAudioBuffer();
         }
     }
 
@@ -79,6 +83,22 @@ export class AssemblyAIWebSocket extends EventEmitter {
         this.socket?.send(JSON.stringify({ terminate_session: true }));
     }
 
+    public sendAudioBuffer(audioBuffer: Buffer): void {
+        if (this.state !== 'started' || !this.socket) {
+            console.error('WebSocket is not ready. Cannot send audio buffer.');
+            return;
+        }
+
+        const chunkSize = 2000;
+        for (let i = 0; i < audioBuffer.length; i += chunkSize) {
+            const chunk = audioBuffer.slice(i, i + chunkSize);
+            if (chunk.length < chunkSize) continue;
+
+            const audioData = chunk.toString('base64');
+            this.socket.send(JSON.stringify({ audio_data: audioData }));
+        }
+        // this.socket.send(audioBuffer);
+    }
     private writeTranscriptToFile(): void {
         fs.writeFile(`${this.filePath}_transcript.txt`, this.transcriptText, (err) => {
             if (err) throw err;
@@ -91,4 +111,4 @@ export class AssemblyAIWebSocket extends EventEmitter {
     }
 }
 
-export const createAssemblyAIWebSocket = (apiKey: string) => new AssemblyAIWebSocket(8000, apiKey);
+export const createAssemblyAIWebSocket = (apiKey: string) => new AssemblyAIWebSocket(16000, apiKey);

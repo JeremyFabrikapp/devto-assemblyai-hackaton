@@ -41,17 +41,31 @@ chrome.action.onClicked.addListener(async (tab) => {
     return;
   }
 
-  // Get a MediaStream for the active tab.
-  const streamId = await chrome.tabCapture.getMediaStreamId({
-    targetTabId: tab.id
-  });
+  try {
+    // Get a MediaStream for the active tab.
+    const streamId = await chrome.tabCapture.getMediaStreamId({
+      targetTabId: tab.id
+    });
 
-  // Send the stream ID to the offscreen document to start recording.
-  chrome.runtime.sendMessage({
-    type: 'start-recording',
-    target: 'offscreen',
-    data: streamId
-  });
+    // Send the stream ID to the offscreen document to start recording.
+    chrome.runtime.sendMessage({
+      type: 'start-recording',
+      target: 'offscreen',
+      data: streamId
+    });
 
-  chrome.action.setIcon({ path: '/icons/recording.png' });
+    chrome.action.setIcon({ path: '/icons/recording.png' });
+  } catch (error) {
+    console.error('Error starting recording:', error);
+    // Optionally, you can show an error message to the user
+    chrome.action.setIcon({ path: 'icons/error.png' });
+  }
+});
+
+// Add a listener for potential errors from the offscreen document
+chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
+  if (message.type === 'recording-error') {
+    console.error('Recording error:', message.error);
+    chrome.action.setIcon({ path: 'icons/error.png' });
+  }
 });

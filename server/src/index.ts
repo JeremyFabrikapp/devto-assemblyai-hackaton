@@ -14,6 +14,12 @@ const { injectWebSocket, upgradeWebSocket } = createNodeWebSocket({ app });
 
 // app.use("/", serveStatic({ path: "./static/index.html" }));
 // app.use("/static/*", serveStatic({ root: "./" }));
+const convertWebmToPcm = async (webmBuffer: ArrayBuffer) => {
+    const audioContext = new AudioContext();
+    const audioData = await audioContext.decodeAudioData(webmBuffer);
+    const pcmData = audioData.getChannelData(0); // Assuming mono audio
+    return pcmData;
+  };
 
 app.get(
   "/ws",
@@ -28,7 +34,7 @@ app.get(
 
       const rawWs = ws.raw as WebSocket;
       const assemblyAIWebSocket = createAssemblyAIWebSocket(process.env.ASSEMBLYAI_API_KEY);
-
+      assemblyAIWebSocket.initializeWebSocket();
       assemblyAIWebSocket.on('partialTranscript', (text) => {
         rawWs.send(JSON.stringify({ type: 'partial', text }));
       });
@@ -39,9 +45,24 @@ app.get(
 
       // Assuming the client sends audio data
       rawWs.on('message', (message) => {
-        // Process the incoming audio data and send it to AssemblyAI
-        // This part depends on how you're receiving audio from the client
-        // You might need to adjust this based on your specific implementation
+        console.log('Received audio data from client', Buffer.isBuffer(message),typeof message, message);
+
+        if (Buffer.isBuffer(message)) {
+          try {
+            // assemblyAIWebSocket.sendAudioBuffer(message);
+          } catch (error) {
+            console.error('Error sending PCM data to AssemblyAI:', error);
+          }
+        } else if (message instanceof ArrayBuffer) {
+          try {
+            const buffer = Buffer.from(message);
+            assemblyAIWebSocket.sendAudioBuffer(buffer);
+          } catch (error) {
+            console.error('Error converting ArrayBuffer to Buffer:', error);
+          }
+        } else {
+          console.log('Received non-Buffer message:', message);
+        }
       });
     },
     onClose: (c, ws) => {
