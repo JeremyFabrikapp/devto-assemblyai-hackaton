@@ -7,6 +7,15 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { Separator } from '@/components/ui/separator';
 import { Slider } from '@/components/ui/slider';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import {
   Download,
   FastForward,
@@ -15,15 +24,19 @@ import {
   Play,
   Rewind,
   Volume2,
-  AudioWaveform
+  AudioWaveform,
+  Sparkles
 } from 'lucide-react';
+
+interface SessionDetailProps {
+  id: string;
+}
 
 interface TranscriptSegment {
   id: number;
   speaker: string;
   text: string;
   timestamp: string;
-  confidence: number;
 }
 
 interface GeneratedNote {
@@ -33,102 +46,85 @@ interface GeneratedNote {
   timestamp: string;
 }
 
-interface SessionDetailProps {
-  id: string;
-}
-
 export default function SessionDetail({ id }: SessionDetailProps) {
   const [isPlaying, setIsPlaying] = useState(false);
   const [currentTime, setCurrentTime] = useState(0);
   const [volume, setVolume] = useState([75]);
   const [activeTab, setActiveTab] = useState('transcript');
+  const [customInstruction, setCustomInstruction] = useState('');
+  const [generatedNotes, setGeneratedNotes] = useState<GeneratedNote[]>([]);
 
   const transcript: TranscriptSegment[] = [
     {
       id: 1,
-      speaker: "Professor",
-      text: "Today we'll be discussing the fundamental principles of quantum mechanics.",
-      timestamp: "00:00:00",
-      confidence: 0.98
+      speaker: 'Speaker 1',
+      text: 'This is a sample transcript segment.',
+      timestamp: '00:00:05'
     },
-    {
-      id: 2,
-      speaker: "Professor",
-      text: "Let's start with the concept of wave-particle duality.",
-      timestamp: "00:00:15",
-      confidence: 0.95
-    },
-    {
-      id: 3,
-      speaker: "Student 1",
-      text: "Could you explain how this relates to the double-slit experiment?",
-      timestamp: "00:00:30",
-      confidence: 0.92
-    }
+    // Add more sample transcript segments as needed
   ];
 
-  const generatedNotes: GeneratedNote[] = [
-    {
-      id: 1,
-      instruction: "Simplified Explanation",
-      content: "Quantum mechanics is about how very tiny things behave. One key idea is that things like light can act both as waves and particles, which is different from what we see in our everyday world. Scientists discovered this through experiments like the double-slit experiment.",
-      timestamp: "00:00:15"
-    },
-    {
-      id: 2,
-      instruction: "Spanish Translation",
-      content: "Hoy discutiremos los principios fundamentales de la mecánica cuántica. Comencemos con el concepto de dualidad onda-partícula. ¿Podrías explicar cómo se relaciona esto con el experimento de doble rendija?",
-      timestamp: "00:00:30"
-    },
-    {
-      id: 3,
-      instruction: "Expert Context",
-      content: "The discussion of wave-particle duality introduces the Copenhagen interpretation and the mathematical foundations of quantum mechanics through the wave function. The double-slit experiment demonstrates quantum superposition and the collapse of the wave function upon measurement.",
-      timestamp: "00:00:45"
-    }
+  const formatTime = (time: number): string => {
+    const minutes = Math.floor(time / 60);
+    const seconds = Math.floor(time % 60);
+    return `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+  };
+
+  const presetInstructions = [
+    { value: 'translate-es', label: 'Translate to Spanish' },
+    { value: 'translate-fr', label: 'Translate to French' },
+    { value: 'simplify', label: 'Simplify for Beginners' },
+    { value: 'expert', label: 'Add Expert Context' },
+    { value: 'summarize', label: 'Summarize Key Points' },
+    { value: 'academic', label: 'Academic Format' },
+    { value: 'bullets', label: 'Convert to Bullet Points' },
+    { value: 'questions', label: 'Generate Study Questions' }
   ];
 
-  const formatTime = (seconds: number) => {
-    const hrs = Math.floor(seconds / 3600);
-    const mins = Math.floor((seconds % 3600) / 60);
-    const secs = Math.floor(seconds % 60);
-    return `${hrs.toString().padStart(2, '0')}:${mins
-      .toString()
-      .padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+  const handleGenerateNote = () => {
+    const newNote = {
+      id: generatedNotes.length + 1,
+      instruction: customInstruction,
+      content: `Generated note based on instruction: ${customInstruction}\n\nThis is a sample generated content based on the transcript...`,
+      timestamp: formatTime(currentTime)
+    };
+    setGeneratedNotes([...generatedNotes, newNote]);
+    setActiveTab(`note-${newNote.id}`);
+    setCustomInstruction('');
   };
 
   return (
     <div className="container pt-24 pb-8">
       <div className="flex justify-between items-center mb-8">
-        <div>
-          <h1 className="text-3xl font-bold">Physics Lecture #{id}</h1>
-          <p className="text-muted-foreground">Recorded on April 5, 2024</p>
+        <h1 className="text-3xl font-bold">Session #{id}</h1>
+        <div className="flex gap-2">
+          <Button variant="outline">
+            <Download className="mr-2 h-4 w-4" />
+            Download
+          </Button>
+          <Button className="btn-primary">
+            Share Session
+          </Button>
         </div>
-        <Button className="btn-primary">
-          <Download className="mr-2 h-4 w-4" />
-          Download Recording
-        </Button>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Audio Player and Content */}
         <div className="lg:col-span-2 space-y-6">
+          {/* Audio Player */}
           <Card>
             <CardContent className="p-6">
-              {/* Waveform Visualization */}
-              <div className="h-32 mb-4 bg-muted rounded-lg flex items-center justify-center">
-                <AudioWaveform className="h-20 w-20 text-muted-foreground" />
-              </div>
-
-              {/* Audio Controls */}
               <div className="space-y-4">
+                <div className="h-32 bg-muted rounded-lg flex items-center justify-center">
+                  <AudioWaveform className="h-20 w-20 text-muted-foreground" />
+                </div>
+                
                 <div className="flex items-center justify-center gap-4">
                   <Button variant="outline" size="icon">
                     <Rewind className="h-4 w-4" />
                   </Button>
-                  <Button
-                    size="lg"
-                    className="w-20"
+                  <Button 
+                    variant="outline" 
+                    size="icon"
                     onClick={() => setIsPlaying(!isPlaying)}
                   >
                     {isPlaying ? (
@@ -142,43 +138,31 @@ export default function SessionDetail({ id }: SessionDetailProps) {
                   </Button>
                 </div>
 
-                <div className="flex items-center gap-4">
-                  <span className="text-sm">{formatTime(currentTime)}</span>
-                  <Slider
-                    value={[currentTime]}
-                    max={3600}
-                    step={1}
-                    className="flex-1"
-                    onValueChange={(value) => setCurrentTime(value[0])}
-                  />
-                  <span className="text-sm">01:00:00</span>
-                </div>
-
                 <div className="flex items-center gap-2">
                   <Volume2 className="h-4 w-4" />
                   <Slider
                     value={volume}
-                    max={100}
-                    className="w-28"
                     onValueChange={setVolume}
+                    max={100}
+                    step={1}
                   />
                 </div>
               </div>
             </CardContent>
           </Card>
 
-          {/* Transcript and Generated Notes */}
+          {/* Transcript and Notes */}
           <Card>
             <CardContent className="p-6">
               <Tabs value={activeTab} onValueChange={setActiveTab}>
                 <div className="flex items-center justify-between mb-4">
-                  <TabsList className="w-full">
-                    <TabsTrigger value="transcript" className="flex-1">
+                  <TabsList>
+                    <TabsTrigger value="transcript">
                       <FileText className="h-4 w-4 mr-2" />
                       Transcript
                     </TabsTrigger>
                     {generatedNotes.map((note) => (
-                      <TabsTrigger key={note.id} value={`note-${note.id}`} className="flex-1">
+                      <TabsTrigger key={note.id} value={`note-${note.id}`}>
                         {note.instruction}
                       </TabsTrigger>
                     ))}
@@ -189,7 +173,7 @@ export default function SessionDetail({ id }: SessionDetailProps) {
                   <ScrollArea className="h-[500px]">
                     <div className="space-y-4">
                       {transcript.map((segment, index) => (
-                        <div key={segment.id} className="space-y-2">
+                        <div key={segment.id}>
                           <div className="flex items-center justify-between">
                             <div className="flex items-center gap-2">
                               <span className="font-semibold">{segment.speaker}</span>
@@ -197,12 +181,11 @@ export default function SessionDetail({ id }: SessionDetailProps) {
                                 {segment.timestamp}
                               </span>
                             </div>
-                            <span className="text-xs text-muted-foreground">
-                              {(segment.confidence * 100).toFixed(0)}% confidence
-                            </span>
                           </div>
-                          <p className="text-sm">{segment.text}</p>
-                          {index < transcript.length - 1 && <Separator className="my-2" />}
+                          <p className="mt-1">{segment.text}</p>
+                          {index < transcript.length - 1 && (
+                            <Separator className="my-4" />
+                          )}
                         </div>
                       ))}
                     </div>
@@ -219,7 +202,7 @@ export default function SessionDetail({ id }: SessionDetailProps) {
                             Generated at {note.timestamp}
                           </span>
                         </div>
-                        <pre className="whitespace-pre-wrap text-sm font-mono bg-muted p-4 rounded-lg">
+                        <pre className="whitespace-pre-wrap font-mono bg-muted p-4 rounded-lg">
                           {note.content}
                         </pre>
                       </div>
@@ -231,68 +214,93 @@ export default function SessionDetail({ id }: SessionDetailProps) {
           </Card>
         </div>
 
-        {/* Session Info */}
         <div className="space-y-6">
+          {/* Session Info */}
           <Card>
             <CardContent className="p-6">
-              <h2 className="text-lg font-semibold mb-4">Session Details</h2>
-              <div className="space-y-4">
-                <div>
-                  <p className="text-sm font-medium">Duration</p>
-                  <p className="text-sm text-muted-foreground">1 hour</p>
-                </div>
-                <div>
-                  <p className="text-sm font-medium">File Size</p>
-                  <p className="text-sm text-muted-foreground">125 MB</p>
-                </div>
-                <div>
-                  <p className="text-sm font-medium">Audio Quality</p>
-                  <p className="text-sm text-muted-foreground">High (320kbps)</p>
-                </div>
-                <div>
-                  <p className="text-sm font-medium">Speakers</p>
-                  <p className="text-sm text-muted-foreground">2 identified</p>
-                </div>
-                <div>
-                  <p className="text-sm font-medium">Generated Notes</p>
-                  <p className="text-sm text-muted-foreground">{generatedNotes.length} versions</p>
-                </div>
+              <h2 className="text-lg font-semibold mb-4">Session Info</h2>
+              <div className="space-y-2">
+                <p className="text-sm">
+                  <span className="text-muted-foreground">Duration: </span>
+                  45:30
+                </p>
+                <p className="text-sm">
+                  <span className="text-muted-foreground">Date: </span>
+                  April 5, 2024
+                </p>
+                <p className="text-sm">
+                  <span className="text-muted-foreground">Speakers: </span>
+                  2 detected
+                </p>
+                <p className="text-sm">
+                  <span className="text-muted-foreground">Words: </span>
+                  1,234
+                </p>
               </div>
             </CardContent>
           </Card>
 
+          {/* Note Generation */}
+          <Card>
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="text-lg font-semibold">Generate New Note</h2>
+                <Sparkles className="h-5 w-5 text-primary" />
+              </div>
+
+              <div className="space-y-4">
+                <div className="space-y-2">
+                  <Label>Preset Instructions</Label>
+                  <Select onValueChange={(value) => setCustomInstruction(presetInstructions.find(i => i.value === value)?.label || '')}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select instruction" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {presetInstructions.map((instruction) => (
+                        <SelectItem key={instruction.value} value={instruction.value}>
+                          {instruction.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div className="space-y-2">
+                  <Label>Custom Instruction</Label>
+                  <Textarea
+                    placeholder="Enter custom instruction (e.g., 'Explain as if teaching to high school students')"
+                    value={customInstruction}
+                    onChange={(e) => setCustomInstruction(e.target.value)}
+                  />
+                </div>
+
+                <Button 
+                  className="w-full" 
+                  variant="outline"
+                  disabled={!customInstruction}
+                  onClick={handleGenerateNote}
+                >
+                  <Sparkles className="mr-2 h-4 w-4" />
+                  Generate Note
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Quick Actions */}
           <Card>
             <CardContent className="p-6">
               <h2 className="text-lg font-semibold mb-4">Quick Actions</h2>
               <div className="space-y-2">
                 <Button className="w-full" variant="outline">
-                  Edit Transcript
+                  Export as PDF
                 </Button>
                 <Button className="w-full" variant="outline">
-                  Generate New Note
+                  Share Transcript
                 </Button>
                 <Button className="w-full" variant="outline">
-                  Share Recording
+                  Delete Session
                 </Button>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardContent className="p-6">
-              <h2 className="text-lg font-semibold mb-4">Related Sessions</h2>
-              <div className="space-y-3">
-                {[2, 3, 4].map((session) => (
-                  <div
-                    key={session}
-                    className="p-3 rounded-lg bg-muted hover:bg-secondary transition-colors cursor-pointer"
-                  >
-                    <h3 className="font-medium">Physics Lecture #{session}</h3>
-                    <p className="text-sm text-muted-foreground">
-                      April {session}, 2024
-                    </p>
-                  </div>
-                ))}
               </div>
             </CardContent>
           </Card>
