@@ -1,1 +1,4 @@
 server/_transcript.txt
+server/audio_files/*
+server/session_info/*
+server/_transcript.txt

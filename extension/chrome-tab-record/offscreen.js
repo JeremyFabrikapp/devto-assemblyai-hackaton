@@ -98,7 +98,7 @@ async function startRecording(streamId) {
   websocket.onopen = () => {
     console.log("WebSocket connection established");
     
-    websocket.send(JSON.stringify({ type: "session_start", userId: "user123" }));
+    websocket.send(JSON.stringify({ type: "session_start", userId: "74049d58-7768-47cb-aafe-7765a3bc72ba" }));
 
   };
 

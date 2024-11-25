@@ -8,6 +8,8 @@
     "@hono/node-ws": "^1.0.4",
     "@langchain/community": "^0.3.4",
     "@langchain/core": "^0.3.7",
+    "@supabase/ssr": "^0.3.0",
+    "@supabase/supabase-js": "^2.43.4",
     "assemblyai": "^4.8.0",
     "audio-decode": "^2.2.2",
     "clipboardy": "^4.0.0",
