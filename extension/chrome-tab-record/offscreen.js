@@ -11,7 +11,6 @@ class Recorder {
     this.workletNode = null;
   }
 
-
   async start(stream) {
     console.log("starting");
     try {
@@ -82,21 +81,10 @@ chrome.runtime.onMessage.addListener(async (message) => {
 });
 
 let audioRecorder;
-let videoRecorder;
-let audioData = [];
-let videoData = [];
 let websocket;
-// const convertWebmToPcm = async (webmBuffer) => {
-//   const audioContext = new AudioContext();
-//   const audioData = await audioContext.decodeAudioData(webmBuffer);
-//   const pcmData = audioData.getChannelData(0); // Assuming mono audio
-//   return pcmData;
-// };
+
 async function startRecording(streamId) {
-  if (
-    audioRecorder?.state === "recording" ||
-    videoRecorder?.state === "recording"
-  ) {
+  if (audioRecorder?.state === "recording") {
     throw new Error("Called startRecording while recording is in progress.");
   }
 
@@ -111,6 +99,12 @@ async function startRecording(streamId) {
     console.error("WebSocket error:", error);
   };
 
+  websocket.onmessage = (event) => {
+    const data = JSON.parse(event.data);
+    if (data.type === 'subtitle') {
+      updateSubtitle(data.text);
+    }
+  };
   let buffer = new Uint8Array();
 
   const appendToBuffer = (newData) => {
@@ -130,14 +124,16 @@ async function startRecording(streamId) {
 
       const regularArray = String.fromCharCode(...toSend);
       const base64 = btoa(regularArray);
-
-      ws.send(
-        JSON.stringify({ type: "input_audio_buffer.append", audio: base64 })
+      websocket.send(
+        toSend
       );
+      // websocket.send(
+      //   JSON.stringify({ type: "input_audio_buffer.append", audio: base64 })
+      // );
     }
   };
 
-  const audioRecorder = new Recorder(handleAudioData);
+  audioRecorder = new Recorder(handleAudioData);
   const media = await navigator.mediaDevices.getUserMedia({
     audio: {
       mandatory: {
@@ -149,69 +145,27 @@ async function startRecording(streamId) {
 
   audioRecorder.state = "recording";
   await audioRecorder.start(media);
-  // const media = await navigator.mediaDevices.getUserMedia({
-  //   audio: {
-  //     mandatory: {
-  //       chromeMediaSource: "tab",
-  //       chromeMediaSourceId: streamId,
-  //     },
-  //   },
-  //   video: {
-  //     mandatory: {
-  //       chromeMediaSource: "tab",
-  //       chromeMediaSourceId: streamId,
-  //     },
-  //   },
-  // });
 
   // Continue to play the captured audio to the user.
   const output = new AudioContext();
   const source = output.createMediaStreamSource(media);
   source.connect(output.destination);
 
-  // Split the media stream into audio and video tracks
-  const audioStream = new MediaStream(media.getAudioTracks());
-  const videoStream = new MediaStream(media.getVideoTracks());
-
-  /*
-  // Start audio recording
-  audioRecorder = new MediaRecorder(audioStream, { mimeType: "audio/webm" });
-  audioRecorder.ondataavailable = async (event) => {
-    // Create a new Blob from the event data
-    const audioChunk = new Blob([event.data], { type: "audio/webm" });
-    audioData.push(audioChunk);
-
-    // Convert audio chunk to ArrayBuffer
-    // const arrayBuffer = await audioChunk.arrayBuffer();
-
-    // Convert WebM to PCM
-    // const pcmData = await convertWebmToPcm(arrayBuffer);
-
-    // Send PCM data to the WebSocket
-    if (websocket.readyState === WebSocket.OPEN) {
-      // websocket.send(event.data);
-    }
-  };
-  // audioRecorder.start(1000); // Send data every 1 second
-  */
-  // Start video recording
-  // videoRecorder = new MediaRecorder(videoStream, { mimeType: "video/webm" });
-  // videoRecorder.ondataavailable = (event) => {
-  //   videoData.push(event.data);
-  // };
-  // videoRecorder.start(1000); // Send data every 1 second
-
   // Record the current state in the URL
   window.location.hash = "recording";
 }
-
+function updateSubtitle(text) {
+  chrome.tabs.query({active: true, currentWindow: true}, (tabs) => {
+    if (tabs[0]) {
+      chrome.tabs.sendMessage(tabs[0].id, {action: 'updateSubtitle', text: text});
+    }
+  });
+}
 async function stopRecording() {
   audioRecorder.stop();
-  // videoRecorder.stop();
 
   // Stopping the tracks makes sure the recording icon in the tab is removed.
-  audioRecorder.stream.getTracks().forEach((t) => t.stop());
-  // videoRecorder.stream.getTracks().forEach((t) => t.stop());
+  // audioRecorder.stream.getTracks().forEach((t) => t.stop());
 
   // Close WebSocket connection
   if (websocket.readyState === WebSocket.OPEN) {
@@ -219,21 +173,10 @@ async function stopRecording() {
   }
 
   console.log("COMPLETE RECORDING");
-  // return;
-  // Create blobs for audio and video
-  const audioBlob = new Blob(audioData, { type: "audio/webm" });
-  // const videoBlob = new Blob(videoData, { type: "video/webm" });
 
   // Clear state ready for next recording
   audioRecorder = undefined;
-  videoRecorder = undefined;
-  audioData = [];
-  videoData = [];
   websocket = undefined;
-
-  // Open audio and video in new tabs
-  // window.open(URL.createObjectURL(audioBlob), '_blank');
-  // window.open(URL.createObjectURL(videoBlob), '_blank');
 
   // Update current state in URL
   window.location.hash = "";

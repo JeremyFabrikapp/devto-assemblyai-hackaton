@@ -19,61 +19,61 @@ const convertWebmToPcm = async (webmBuffer: ArrayBuffer) => {
     const audioData = await audioContext.decodeAudioData(webmBuffer);
     const pcmData = audioData.getChannelData(0); // Assuming mono audio
     return pcmData;
-  };
+};
 
 app.get(
-  "/ws",
-  upgradeWebSocket((c) => ({
-    onOpen: async (c, ws) => {
-      console.log('WebSocket connection request received');
-      if (!process.env.ASSEMBLYAI_API_KEY) {
-        return ws.close();
-      }
-      console.log('WebSocket connection opened');
-      console.log('AssemblyAI API Key:', process.env.ASSEMBLYAI_API_KEY);
+    "/ws",
+    upgradeWebSocket((c) => ({
+        onOpen: async (c, ws) => {
+            console.log('WebSocket connection request received');
+            if (!process.env.ASSEMBLYAI_API_KEY) {
+                return ws.close();
+            }
+            console.log('WebSocket connection opened');
+            console.log('AssemblyAI API Key:', process.env.ASSEMBLYAI_API_KEY);
 
-      const rawWs = ws.raw as WebSocket;
-      const assemblyAIWebSocket = createAssemblyAIWebSocket(process.env.ASSEMBLYAI_API_KEY);
-      assemblyAIWebSocket.initializeWebSocket();
-      assemblyAIWebSocket.on('partialTranscript', (text) => {
-        rawWs.send(JSON.stringify({ type: 'partial', text }));
-      });
+            const rawWs = ws.raw as WebSocket;
+            const assemblyAIWebSocket = createAssemblyAIWebSocket(process.env.ASSEMBLYAI_API_KEY);
+            assemblyAIWebSocket.initializeWebSocket();
+            assemblyAIWebSocket.on('partialTranscript', (text) => {
+                rawWs.send(JSON.stringify({ type: 'subtitle', status: 'partial', text }));
+            });
 
-      assemblyAIWebSocket.on('finalTranscript', (text) => {
-        rawWs.send(JSON.stringify({ type: 'final', text }));
-      });
+            assemblyAIWebSocket.on('finalTranscript', (text) => {
+                rawWs.send(JSON.stringify({ type: 'subtitle', status: 'final', text }));
+            });
 
-      // Assuming the client sends audio data
-      rawWs.on('message', (message) => {
-        console.log('Received audio data from client', Buffer.isBuffer(message),typeof message, message);
+            // Assuming the client sends audio data
+            rawWs.on('message', (message) => {
+                // console.log('Received audio data from client', Buffer.isBuffer(message),typeof message, message);
 
-        if (Buffer.isBuffer(message)) {
-          try {
-            // assemblyAIWebSocket.sendAudioBuffer(message);
-          } catch (error) {
-            console.error('Error sending PCM data to AssemblyAI:', error);
-          }
-        } else if (message instanceof ArrayBuffer) {
-          try {
-            const buffer = Buffer.from(message);
-            assemblyAIWebSocket.sendAudioBuffer(buffer);
-          } catch (error) {
-            console.error('Error converting ArrayBuffer to Buffer:', error);
-          }
-        } else {
-          console.log('Received non-Buffer message:', message);
-        }
-      });
-    },
-    onClose: (c, ws) => {
-      console.log("Client disconnected");
-    },
-  }))
+                if (Buffer.isBuffer(message)) {
+                    try {
+                        assemblyAIWebSocket.sendAudioBuffer(message);
+                    } catch (error) {
+                        console.error('Error sending PCM data to AssemblyAI:', error);
+                    }
+                } else if (message instanceof ArrayBuffer) {
+                    try {
+                        const buffer = Buffer.from(message);
+                        assemblyAIWebSocket.sendAudioBuffer(buffer);
+                    } catch (error) {
+                        console.error('Error converting ArrayBuffer to Buffer:', error);
+                    }
+                } else {
+                    console.log('Received non-Buffer message:', message);
+                }
+            });
+        },
+        onClose: (c, ws) => {
+            console.log("Client disconnected");
+        },
+    }))
 );
 
 const server = serve({
-  fetch: app.fetch,
-  port: WS_PORT,
+    fetch: app.fetch,
+    port: WS_PORT,
 });
 
 injectWebSocket(server);

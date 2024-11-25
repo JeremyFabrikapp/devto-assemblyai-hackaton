@@ -89,15 +89,15 @@ export class AssemblyAIWebSocket extends EventEmitter {
             return;
         }
 
-        const chunkSize = 2000;
-        for (let i = 0; i < audioBuffer.length; i += chunkSize) {
-            const chunk = audioBuffer.slice(i, i + chunkSize);
-            if (chunk.length < chunkSize) continue;
+        // const chunkSize = 2000;
+        // for (let i = 0; i < audioBuffer.length; i += chunkSize) {
+        //     const chunk = audioBuffer.slice(i, i + chunkSize);
+        //     if (chunk.length < chunkSize) continue;
 
-            const audioData = chunk.toString('base64');
-            this.socket.send(JSON.stringify({ audio_data: audioData }));
-        }
-        // this.socket.send(audioBuffer);
+        //     const audioData = chunk.toString('base64');
+        //     this.socket.send(JSON.stringify({ audio_data: audioData }));
+        // }
+        this.socket.send(audioBuffer);
     }
     private writeTranscriptToFile(): void {
         fs.writeFile(`${this.filePath}_transcript.txt`, this.transcriptText, (err) => {
