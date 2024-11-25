@@ -81,6 +81,11 @@ chrome.runtime.onMessage.addListener(async (message) => {
 
 let audioRecorder;
 let websocket;
+let accumulatedData = [];
+let buffer = new Uint8Array();
+let recorder;
+
+
 
 async function startRecording(streamId) {
   if (audioRecorder?.state === "recording") {
@@ -92,6 +97,9 @@ async function startRecording(streamId) {
   websocket.binaryType = "arraybuffer";
   websocket.onopen = () => {
     console.log("WebSocket connection established");
+    
+    websocket.send(JSON.stringify({ type: "session_start", userId: "user123" }));
+
   };
 
   websocket.onerror = (error) => {
@@ -99,17 +107,16 @@ async function startRecording(streamId) {
   };
 
   function sendSubtitleToBackground(text) {
-    chrome.runtime.sendMessage({action: 'updateSubtitle', text: text});
+    chrome.runtime.sendMessage({ action: "updateSubtitle", text: text });
   }
-  
+
   // Modify the WebSocket onmessage handler to send subtitles to the background
   websocket.onmessage = (event) => {
     const data = JSON.parse(event.data);
-    if (data.type === 'subtitle') {
+    if (data.type === "subtitle") {
       sendSubtitleToBackground(data.text);
     }
   };
-  let buffer = new Uint8Array();
 
   const appendToBuffer = (newData) => {
     const newBuffer = new Uint8Array(buffer.length + newData.length);
@@ -121,7 +128,7 @@ async function startRecording(streamId) {
   const handleAudioData = (data) => {
     const uint8Array = new Uint8Array(data);
     appendToBuffer(uint8Array);
-
+    // accumulatedData.push(data)
     if (buffer.length >= BUFFER_SIZE) {
       const toSend = new Uint8Array(buffer.slice(0, BUFFER_SIZE));
       buffer = new Uint8Array(buffer.slice(BUFFER_SIZE));
@@ -129,6 +136,8 @@ async function startRecording(streamId) {
       const regularArray = String.fromCharCode(...toSend);
       const base64 = btoa(regularArray);
       websocket.send(toSend);
+      // accumulatedData.push(toSend); // Add this line to accumulate data
+
       // websocket.send(
       //   JSON.stringify({ type: "input_audio_buffer.append", audio: base64 })
       // );
@@ -153,6 +162,19 @@ async function startRecording(streamId) {
   const source = output.createMediaStreamSource(media);
   source.connect(output.destination);
 
+
+  // Start recording.
+  recorder = new MediaRecorder(media, { mimeType: 'audio/webm' });
+  recorder.ondataavailable = (event) => accumulatedData.push(event.data);
+  recorder.onstop = () => {
+    const blob = new Blob(accumulatedData, { type: 'audio/webm' });
+    window.open(URL.createObjectURL(blob), '_blank');
+
+    // Clear state ready for next recording
+    recorder = undefined;
+    accumulatedData = [];
+  };
+  recorder.start();
   // Record the current state in the URL
   window.location.hash = "recording";
 }
@@ -182,6 +204,15 @@ async function stopRecording() {
     websocket.close();
   }
 
+  console.log("COMPLETE RECORDING");
+  // Create a Blob from the accumulated data and open in a new window
+  // const blob = new Blob(buffer, { type: "audio/webm" }); // Note: Changed to audio/webm
+  // window.open(URL.createObjectURL(blob), "_blank");
+  // const blob = new Blob(accumulatedData, { type: 'audio/webm' });
+  // window.open(URL.createObjectURL(blob), '_blank');
+  // // Clear accumulated data
+  // recorder = undefined;
+  // accumulatedData = [];
   console.log("COMPLETE RECORDING");
 
   // Clear state ready for next recording
