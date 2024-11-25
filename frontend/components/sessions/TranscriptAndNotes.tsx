@@ -49,20 +49,22 @@ export function TranscriptAndNotes({ transcript, generatedNotes }: TranscriptAnd
             <ScrollArea className="h-[500px]">
               <div className="space-y-4">
                 {transcript.map((segment, index) => (
-                  <div key={segment.id}>
-                    <div className="flex items-center justify-between">
+                  <span key={segment.id}>
+                    {/* <div className="flex items-center justify-between">
                       <div className="flex items-center gap-2">
                         <span className="font-semibold">{segment.speaker}</span>
                         <span className="text-sm text-muted-foreground">
                           {segment.timestamp}
                         </span>
                       </div>
-                    </div>
-                    <p className="mt-1">{segment.text}</p>
+                    </div> */}
+                    {" "}
+                    {segment.text}
+                    {/* <p className="mt-1">{segment.text}</p>
                     {index < transcript.length - 1 && (
                       <Separator className="my-4" />
-                    )}
-                  </div>
+                    )} */}
+                  </span>
                 ))}
               </div>
             </ScrollArea>

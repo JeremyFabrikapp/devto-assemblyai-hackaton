@@ -13,13 +13,14 @@ import {
 import { Sparkles } from 'lucide-react';
 
 interface NoteGeneratorProps {
-  onGenerateNote: (instruction: string) => void;
+  onGenerateNote: (instruction: string) => Promise<void>;
 }
 
 const presetInstructions = [
   { value: 'translate-es', label: 'Translate to Spanish' },
   { value: 'translate-fr', label: 'Translate to French' },
   { value: 'simplify', label: 'Simplify for Beginners' },
+  { value: 'blog', label: 'Format as Blog Post' },
   { value: 'expert', label: 'Add Expert Context' },
   { value: 'summarize', label: 'Summarize Key Points' },
   { value: 'academic', label: 'Academic Format' },
@@ -29,10 +30,13 @@ const presetInstructions = [
 
 export function NoteGenerator({ onGenerateNote }: NoteGeneratorProps) {
   const [customInstruction, setCustomInstruction] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
 
-  const handleGenerateNote = () => {
-    onGenerateNote(customInstruction);
+  const handleGenerateNote = async () => {
+    setIsLoading(true);
+    await onGenerateNote(customInstruction);
     setCustomInstruction('');
+    setIsLoading(false);
   };
 
   return (
@@ -72,11 +76,15 @@ export function NoteGenerator({ onGenerateNote }: NoteGeneratorProps) {
           <Button 
             className="w-full" 
             variant="outline"
-            disabled={!customInstruction}
+            disabled={!customInstruction || isLoading}
             onClick={handleGenerateNote}
           >
-            <Sparkles className="mr-2 h-4 w-4" />
-            Generate Note
+            {isLoading ? 'Generating...' : (
+              <>
+                <Sparkles className="mr-2 h-4 w-4" />
+                Generate Note
+              </>
+            )}
           </Button>
         </div>
       </CardContent>

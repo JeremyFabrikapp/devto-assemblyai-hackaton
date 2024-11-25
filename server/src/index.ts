@@ -36,6 +36,7 @@ app.get(
             const assemblyAIWebSocket = createAssemblyAIWebSocket(process.env.ASSEMBLYAI_API_KEY);
             assemblyAIWebSocket.initializeWebSocket();
             assemblyAIWebSocket.on('partialTranscript', (text) => {
+                // console.log('Partial transcript received:', text);
                 rawWs.send(JSON.stringify({ type: 'subtitle', status: 'partial', text }));
             });
 

@@ -4,12 +4,12 @@ import { Transcript, LemurTaskResponse, LemurSummaryResponse, LemurQuestionAnswe
 export const transcribeAudio = async (audioUrl: string): Promise<Transcript> => {
     const transcript = await AssemblyAIClient.transcripts.transcribe({
         audio: audioUrl,
-        entity_detection: true,
-        auto_highlights: true,
-        summarization: true,
+        entity_detection: false,
+        auto_highlights: false,
+        summarization: false,
         summary_model: 'informative',
         summary_type: 'bullets',
-        iab_categories: true
+        iab_categories: false
     });
     return transcript;
 };

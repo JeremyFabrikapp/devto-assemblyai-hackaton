@@ -37,7 +37,7 @@ export class AssemblyAIWebSocket extends EventEmitter {
 
     private handleMessage(message: WebSocket.MessageEvent): void {
         const res = JSON.parse(message.data.toString());
-        console.log('Received message from AssemblyAI:', res);
+        // console.log('Received message from AssemblyAI:', res);
 
         if (res.message_type === 'PartialTranscript') {
             this.emit('partialTranscript', res.text);

@@ -9,7 +9,11 @@ import { SessionInfo } from "./SessionInfo";
 import { NoteGenerator } from "./NoteGenerator";
 import { QuickActions } from "./QuickActions";
 import { useAssembly } from "@/hooks/use-assembly";
-import { questionAnswer, transcribe } from "@/app/actions/transcribe";
+import {
+  lemurTask,
+  questionAnswer,
+  transcribe,
+} from "@/app/actions/transcribe";
 // import { transcribeAudio } from '@/provider/assemblyai/api';
 
 interface SessionDetailProps {
@@ -83,7 +87,7 @@ export default function SessionDetail({ id }: SessionDetailProps) {
       try {
         const result = await transcribe(session.audioFile);
         console.log("Transcription result:", result);
-        await handleAskQuestion(result.id);
+        // await handleAskQuestion(result.id);
         if (result && result.words) {
           const formattedTranscript = result.words.map((word, index) => ({
             id: index,
@@ -135,15 +139,24 @@ export default function SessionDetail({ id }: SessionDetailProps) {
   //   return <div>Error: {error}</div>;
   // }
 
-  const handleGenerateNote = (instruction: string) => {
-    // This is a placeholder. In a real application, you would call an API to generate the note.
-    const newNote: GeneratedNote = {
-      id: Date.now(),
-      instruction,
-      content: `Generated content for "${instruction}"`,
-      timestamp: new Date().toISOString(),
-    };
-    setGeneratedNotes([...generatedNotes, newNote]);
+  const generateNote = async (instruction: string) => {
+    try {
+      const transcriptId = "b641e780-3df8-4fd0-a18c-0da9c687c595"; // Replace with actual transcript ID
+      const response = await lemurTask(transcriptId, instruction + `You must only return the output for the instruction, formatted as mdx. DO NOT ADD ANYTHING TO YOUR RESPONSE. The output will be used as is. DO NOT ADD MDX quotes, just the content inside.`);
+      const newNote: GeneratedNote = {
+        id: Date.now(),
+        instruction,
+        content: response.response, // Assuming response has a content field
+        timestamp: new Date().toISOString(),
+      };
+      setGeneratedNotes([...generatedNotes, newNote]);
+    } catch (error) {
+      console.error("Error generating note:", error);
+      // Handle error appropriately, e.g., show a notification to the user
+    }
+  };
+  const handleGenerateNote = async (instruction: string) => {
+    await generateNote(instruction);
   };
 
   return (

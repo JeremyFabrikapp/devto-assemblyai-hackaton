@@ -8,7 +8,7 @@ import Header from '@/components/layout/header';
 const inter = Inter({ subsets: ['latin'] });
 
 export const metadata: Metadata = {
-  title: 'EchoLearn - Smart Learning Assistant',
+  title: 'TranscribeNow - Smart Learning Assistant',
   description: 'Capture, transcribe, and learn from any audio source with AI-powered insights.',
 };
 

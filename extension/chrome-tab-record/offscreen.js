@@ -1,4 +1,3 @@
-
 const BUFFER_SIZE = 4096;
 
 class Recorder {
@@ -99,10 +98,15 @@ async function startRecording(streamId) {
     console.error("WebSocket error:", error);
   };
 
+  function sendSubtitleToBackground(text) {
+    chrome.runtime.sendMessage({action: 'updateSubtitle', text: text});
+  }
+  
+  // Modify the WebSocket onmessage handler to send subtitles to the background
   websocket.onmessage = (event) => {
     const data = JSON.parse(event.data);
     if (data.type === 'subtitle') {
-      updateSubtitle(data.text);
+      sendSubtitleToBackground(data.text);
     }
   };
   let buffer = new Uint8Array();
@@ -124,9 +128,7 @@ async function startRecording(streamId) {
 
       const regularArray = String.fromCharCode(...toSend);
       const base64 = btoa(regularArray);
-      websocket.send(
-        toSend
-      );
+      websocket.send(toSend);
       // websocket.send(
       //   JSON.stringify({ type: "input_audio_buffer.append", audio: base64 })
       // );
@@ -155,11 +157,19 @@ async function startRecording(streamId) {
   window.location.hash = "recording";
 }
 function updateSubtitle(text) {
-  chrome.tabs.query({active: true, currentWindow: true}, (tabs) => {
-    if (tabs[0]) {
-      chrome.tabs.sendMessage(tabs[0].id, {action: 'updateSubtitle', text: text});
-    }
-  });
+  console.log("XXXXX", text);
+  if (typeof chrome !== "undefined" && chrome.tabs) {
+    chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+      if (tabs[0]) {
+        chrome.tabs.sendMessage(tabs[0].id, {
+          action: "updateSubtitle",
+          text: text,
+        });
+      }
+    });
+  } else {
+    console.log("chrome.tabs is undefined");
+  }
 }
 async function stopRecording() {
   audioRecorder.stop();

@@ -11,6 +11,7 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
+console.log("Chrome SETUP.", chrome);
 
 chrome.action.onClicked.addListener(async (tab) => {
   const existingContexts = await chrome.runtime.getContexts({});
@@ -67,5 +68,12 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   if (message.type === 'recording-error') {
     console.error('Recording error:', message.error);
     chrome.action.setIcon({ path: 'icons/error.png' });
+  }
+  if (message.action === 'updateSubtitle') {
+    chrome.tabs.query({active: true, currentWindow: true}, (tabs) => {
+      if (tabs[0]) {
+        chrome.tabs.sendMessage(tabs[0].id, {action: 'updateSubtitle', text: message.text});
+      }
+    });
   }
 });
