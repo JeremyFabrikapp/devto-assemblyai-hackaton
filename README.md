@@ -1,3 +1,4 @@
+
 # AssemblyAI Challenge: Really Rad Real-Time
 
 ## What I Built
@@ -12,18 +13,21 @@ The application consists of three main components:
 
 ## Demo
 
-[Link to the deployed application]
+[Watch the Demo Video](https://www.youtube.com/watch?v=INx_ykQ9Nhw)
 
 ### Screenshots
 
-![Recording Interface](screenshot_recording_interface.png)
-*The main recording interface showing live transcription and note-taking features*
 
-![Note Generation](screenshot_note_generation.png)
+![Note Generation](https://dev-to-uploads.s3.amazonaws.com/uploads/articles/s83q9eygn2wfxh6qqfhs.png)
+*Review and edit transcribed sessions with additional context and notes*
+
+
+![List Your Sessions](https://dev-to-uploads.s3.amazonaws.com/uploads/articles/yeh0onunet0y3hdx1o2f.png)
 *AI-assisted note generation based on the transcribed content*
 
-![Session Review](screenshot_session_review.png)
-*Review and edit transcribed sessions with additional context and notes*
+
+![Dashboard](https://dev-to-uploads.s3.amazonaws.com/uploads/articles/sedgxn5lbs6wa9k3pepo.png)
+*The dashboard interface showing live transcription and note-taking stats*
 
 ## Journey
 
