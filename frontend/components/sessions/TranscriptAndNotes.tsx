@@ -1,9 +1,10 @@
-import { useState } from 'react';
-import { Card, CardContent } from '@/components/ui/card';
-import { ScrollArea } from '@/components/ui/scroll-area';
-import { Separator } from '@/components/ui/separator';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { FileText } from 'lucide-react';
+import { useState } from "react";
+import { Card, CardContent } from "@/components/ui/card";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { Separator } from "@/components/ui/separator";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { FileText } from "lucide-react";
+import { Note } from "@/types/database";
 
 interface TranscriptSegment {
   id: number;
@@ -20,12 +21,16 @@ interface GeneratedNote {
 }
 
 interface TranscriptAndNotesProps {
-  transcript: TranscriptSegment[];
-  generatedNotes: GeneratedNote[];
+  words?: TranscriptSegment[];
+  transcript: string;
+  generatedNotes: Note[];
 }
 
-export function TranscriptAndNotes({ transcript, generatedNotes }: TranscriptAndNotesProps) {
-  const [activeTab, setActiveTab] = useState('transcript');
+export function TranscriptAndNotes({
+  transcript,
+  generatedNotes,
+}: TranscriptAndNotesProps) {
+  const [activeTab, setActiveTab] = useState("transcript");
 
   return (
     <Card>
@@ -39,7 +44,7 @@ export function TranscriptAndNotes({ transcript, generatedNotes }: TranscriptAnd
               </TabsTrigger>
               {generatedNotes.map((note) => (
                 <TabsTrigger key={note.id} value={`note-${note.id}`}>
-                  {note.instruction}
+                  {note.generation_instruction}
                 </TabsTrigger>
               ))}
             </TabsList>
@@ -47,26 +52,7 @@ export function TranscriptAndNotes({ transcript, generatedNotes }: TranscriptAnd
 
           <TabsContent value="transcript">
             <ScrollArea className="h-[500px]">
-              <div className="space-y-4">
-                {transcript.map((segment, index) => (
-                  <span key={segment.id}>
-                    {/* <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-2">
-                        <span className="font-semibold">{segment.speaker}</span>
-                        <span className="text-sm text-muted-foreground">
-                          {segment.timestamp}
-                        </span>
-                      </div>
-                    </div> */}
-                    {" "}
-                    {segment.text}
-                    {/* <p className="mt-1">{segment.text}</p>
-                    {index < transcript.length - 1 && (
-                      <Separator className="my-4" />
-                    )} */}
-                  </span>
-                ))}
-              </div>
+              <div className="space-y-4">{transcript}</div>
             </ScrollArea>
           </TabsContent>
 
@@ -75,9 +61,9 @@ export function TranscriptAndNotes({ transcript, generatedNotes }: TranscriptAnd
               <ScrollArea className="h-[500px]">
                 <div className="space-y-4">
                   <div className="flex items-center justify-between">
-                    <h3 className="font-semibold">{note.instruction}</h3>
+                    <h3 className="font-semibold">{note.generation_instruction}</h3>
                     <span className="text-sm text-muted-foreground">
-                      Generated at {note.timestamp}
+                      Generated at {note.created_at}
                     </span>
                   </div>
                   <pre className="whitespace-pre-wrap font-mono bg-muted p-4 rounded-lg">

@@ -6,6 +6,15 @@ export const transcribeAudio = async (audioUrl: string): Promise<Transcript> => 
     return transcript;
 };
 
+export const runLemurTaskWithCustomOutput = async (transcriptId: string, prompt: string): Promise<LemurTaskResponse> => {
+    const result = await AssemblyAIClient.lemur.task({
+        transcript_ids: [transcriptId],
+        prompt: prompt + ' <IMPORTANT>You must only return the output for the instruction, formatted as mdx. DO NOT ADD ANYTHING TO YOUR RESPONSE. The output will be used as is. DO NOT ADD MDX quotes, just the content inside.',
+        final_model: 'anthropic/claude-3-5-sonnet',
+    });
+    return result;
+};
+
 export const runLemurTask = async (transcriptId: string, prompt: string): Promise<LemurTaskResponse> => {
     const result = await AssemblyAIClient.lemur.task({
         transcript_ids: [transcriptId],

@@ -16,6 +16,32 @@ subtitleOverlay.style.cssText = `
 subtitleOverlay.textContent = "Press on the Red Dot in Extensions to start recording";
 document.body.appendChild(subtitleOverlay);
 console.log("Subtitle overlay created and appended to the document body.", chrome);
+// Function to update subtitle and set a timer to remove it
+// function updateSubtitleWithTimer(text) {
+//   subtitleOverlay.textContent = text;
+//   if (!document.body.contains(subtitleOverlay)) {
+//     document.body.appendChild(subtitleOverlay);
+//   }
+  
+//   // Clear any existing timeout
+//   if (window.subtitleTimeout) {
+//     clearTimeout(window.subtitleTimeout);
+//   }
+  
+//   // Set a new timeout to remove the text after 5 seconds
+//   window.subtitleTimeout = setTimeout(() => {
+//     subtitleOverlay.textContent = '';
+//   }, 5000);
+// }
+
+// // Modify the existing message listener
+// chrome.runtime.onMessage.removeListener(chrome.runtime.onMessage.listeners[0]);
+// chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
+//   console.log("Received message from background script:", message);
+//   if (message.action === 'updateSubtitle') {
+//     updateSubtitleWithTimer(message.text || '');
+//   }
+// });
 
 // Declare a variable to keep track of the removal timestamp
 let removalTimestamp = null;

@@ -1,8 +1,8 @@
 "use client";
 
-import { Card, CardContent } from '@/components/ui/card';
-import { ScrollArea } from '@/components/ui/scroll-area';
-import { Separator } from '@/components/ui/separator';
+import { Card, CardContent } from "@/components/ui/card";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { Separator } from "@/components/ui/separator";
 
 interface TranscriptSegment {
   id: number;
@@ -13,7 +13,8 @@ interface TranscriptSegment {
 }
 
 interface TranscriptViewProps {
-  transcript: TranscriptSegment[];
+  transcript: string;
+  words?: TranscriptSegment[];
 }
 
 export default function TranscriptView({ transcript }: TranscriptViewProps) {
@@ -22,7 +23,10 @@ export default function TranscriptView({ transcript }: TranscriptViewProps) {
       <CardContent className="p-6">
         <h2 className="text-lg font-semibold mb-4">Live Transcript</h2>
         <ScrollArea className="h-[400px] pr-4">
-          {transcript.length === 0 ? (
+          <div className="flex items-center justify-center h-32 text-muted-foreground">
+            {transcript}
+          </div>
+          {/* {transcript.length === 0 ? (
             <div className="flex items-center justify-center h-32 text-muted-foreground">
               Transcript will appear here when recording starts...
             </div>
@@ -46,7 +50,7 @@ export default function TranscriptView({ transcript }: TranscriptViewProps) {
                 )}
               </div>
             ))
-          )}
+          )} */}
         </ScrollArea>
       </CardContent>
     </Card>
