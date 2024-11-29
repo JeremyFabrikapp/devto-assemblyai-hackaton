@@ -20,4 +20,4 @@ COPY server ./
 # No need to explicitly expose a port
 
 # Start the application, using the port provided by Cloud Run
-CMD ["sh", "-c", "npm run dev -- -p $PORT"]
+CMD ["sh", "-c", "npm run start -- -p $PORT"]
