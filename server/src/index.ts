@@ -36,7 +36,7 @@ const convertPcmToMp3 = async (pcmFilePath: string, mp3FilePath: string, frequen
         await execPromise(`ffmpeg -f s16le -ar ${frequency} -ac 1 -i ${pcmFilePath} ${mp3FilePath}`);
         console.log(`Converted ${pcmFilePath} to ${mp3FilePath} with frequency ${frequency} Hz`);
     } catch (error) {
-        console.error('Error converting PCM to MP3:', error);
+        throw new Error('Failed to convert PCM to MP3');
     }
 };
 
@@ -120,7 +120,18 @@ app.get(
                 const mp3FileName = `audio_${sessionId}.mp3`;
                 const mp3FilePath = path.join(__dirname, '..', 'audio_files', mp3FileName);
 
-                await convertPcmToMp3(filePath, mp3FilePath);
+                try {
+                    // Check if the PCM file exists before attempting conversion
+                    if (!fs.existsSync(filePath)) {
+                        console.error(`PCM file not found: ${filePath}`);
+                        throw new Error('PCM file not found');
+                    }
+                    await convertPcmToMp3(filePath, mp3FilePath);
+                } catch (error) {
+                    console.log('Error converting PCM to MP3:', error);
+                    return;
+                    // You might want to handle this error, e.g., by setting a flag or using a default MP3 file
+                }
 
                 const sessionInfo = {
                     sessionId,
@@ -182,14 +193,24 @@ app.get(
                         try {
                             const audioFileUrl = await generateDownloadLink(storagePath);
                             transcript = await transcribeAudio(audioFileUrl);
-
+                            const duration = calculateDurationFromWords(transcript);
                             // Update the recording with the transcript information
                             await updateRecording(recording.id, {
                                 status: 'completed',
                                 transcript: transcript,
-                                duration: calculateDurationFromWords(transcript), // You'll need to calculate this
+                                duration: duration, // You'll need to calculate this
                                 // Add any other relevant transcript data
                             });
+                            // Check if duration is zero (empty file)
+                            if (duration === 0) {
+                                console.log(`Empty audio file detected for recording ${recording.id}`);
+                                await updateRecording(recording.id, {
+                                    status: 'empty',
+                                    transcript: 'Empty audio file detected'
+                                });
+                                await updateSession(session.id, { status: 'empty' });
+                                return; // Exit the process for this recording
+                            }
 
                             console.log(`Transcription completed for recording ${recording.id}`);
 

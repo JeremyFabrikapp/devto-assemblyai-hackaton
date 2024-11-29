@@ -2,7 +2,9 @@ import { AssemblyAIClient } from './client';
 import { Transcript, LemurTaskResponse, LemurSummaryResponse, LemurQuestionAnswerResponse, LemurActionItemsResponse } from 'assemblyai';
 
 export const transcribeAudio = async (audioUrl: string): Promise<Transcript> => {
-    const transcript = await AssemblyAIClient.transcripts.transcribe({ audio: audioUrl });
+    const transcript = await AssemblyAIClient.transcripts.transcribe({
+        audio: audioUrl, language_detection: true
+    });
     return transcript;
 };
 

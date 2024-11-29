@@ -1,7 +1,11 @@
 {
   "name": "js_server",
   "scripts": {
-    "dev": "tsx watch src/index.ts"
+    "dev": "tsx watch src/index.ts",
+    "start": "tsx src/index.ts",
+    "build": "tsc",
+    "lint": "eslint . --ext .ts",
+    "test": "jest"
   },
   "dependencies": {
     "@hono/node-server": "^1.13.1",

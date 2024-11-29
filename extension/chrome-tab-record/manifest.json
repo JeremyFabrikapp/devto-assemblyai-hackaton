@@ -1,13 +1,19 @@
 {
-  "name": "Tab Capture - Recorder",
-  "description": "Records the current tab in an offscreen document.",
+  "name": "TranscribeNow - Recorder",
+  "description": "Records the current tab audio.",
   "version": "1.0.0",
   "manifest_version": 3,
   "minimum_chrome_version": "116",
- 
- "action": {
-    "default_icon": "icons/not-recording.png"
+  "action": {
+    // "default_popup": "popup.html", // Add this to specify your popup
+    "default_icon": {
+      "16": "icons/not-recording.png",
+      "32": "icons/not-recording.png",
+      "48": "icons/not-recording.png",
+      "128": "icons/not-recording.png"
+    }
   },
+
   "background": {
     "service_worker": "service-worker.js",
     "type": "module"
@@ -15,9 +21,17 @@
   "content_scripts": [
     {
       "matches": ["<all_urls>"],
-      "js": ["content-script.js"]
+      "js": ["content-script.js", "audio.js"]
     }
   ],
-  "permissions": ["tabCapture", "offscreen", "activeTab", "storage"],
+  "permissions": [
+    "tabs",
+    "tabCapture",
+    "offscreen",
+    "activeTab",
+    "scripting",
+    "storage",
+    "notifications"
+  ],
   "host_permissions": ["<all_urls>"]
 }
