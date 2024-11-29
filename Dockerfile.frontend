@@ -22,6 +22,12 @@ COPY frontend/.env* ./
 # Build the Next.js app
 RUN npm run build
 
+# Copy static files to standalone directory
+RUN cp -R .next/static .next/standalone/.next/static
+
+# Copy public folder to standalone directory
+RUN cp -R public .next/standalone/public
+
 # The application will listen on the port provided by Cloud Run
 # No need to explicitly expose a port
 
