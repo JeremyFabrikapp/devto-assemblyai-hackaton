@@ -26,4 +26,4 @@ RUN npm run build
 # No need to explicitly expose a port
 
 # Start the application, using the port provided by Cloud Run
-CMD ["sh", "-c", "npm start -- -p $PORT"]
+CMD ["sh", "-c", "node .next/standalone/server.js -- -p $PORT"]
