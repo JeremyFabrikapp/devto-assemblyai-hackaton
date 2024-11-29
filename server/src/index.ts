@@ -20,7 +20,7 @@ import { calculateDurationFromWords } from "./providers/assemblyai/utils";
 const execPromise = util.promisify(exec);
 
 const app = new Hono();
-const WS_PORT = 8888;
+const WS_PORT = process.env.PORT || 8888;
 
 const { injectWebSocket, upgradeWebSocket } = createNodeWebSocket({ app });
 
