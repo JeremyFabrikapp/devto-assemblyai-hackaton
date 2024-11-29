@@ -1,3 +1,4 @@
+import { TranscriptSegment } from "@/lib/types";
 import { Transcript } from "assemblyai";
 
 // Interfaces
@@ -48,4 +49,12 @@ export interface Note {
     user_id: string;
     is_generated: boolean;
     generation_instruction: string | null;
+}
+
+
+
+export interface TranscriptAndNotesProps {
+    words?: TranscriptSegment[];
+    transcript: string;
+    generatedNotes: Note[];
 }

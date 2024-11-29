@@ -2,11 +2,12 @@ import { getStorageFileAsAdmin } from "@/providers/supabase/cloudStorage";
 
 export async function GET(
   request: Request,
-  { params }: { params: { path: string | string[] } }
+  { params }: { params: Promise<{ path: string[] }> }
 ) {
-  const imagePath = Array.isArray(params.path)
-    ? params.path.join("/")
-    : params.path;
+  const resolvedParams = await params;
+  const imagePath = Array.isArray(resolvedParams.path)
+    ? resolvedParams.path.join("/")
+    : resolvedParams.path;
   console.log({ imagePath: imagePath });
   const mediaExtension = imagePath.split(".").pop() as string;
   let fileExtension = "image/jpeg";

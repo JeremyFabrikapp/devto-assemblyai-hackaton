@@ -2,7 +2,8 @@
 
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
-import { Recording, TranscriptSegment } from '../types';
+import {  TranscriptSegment } from '../types';
+import { Recording } from '@/types/database';
 
 interface RecordingState {
   currentRecording: Recording | null;
@@ -26,10 +27,15 @@ export const useRecordingStore = create<RecordingState>()(
           currentRecording: {
             id: Date.now().toString(),
             title,
-            startTime: new Date().toISOString(),
+            start_time: new Date().toISOString(),
             duration: 0,
-            transcript: [],
+            transcript: [] as any,
             status: 'recording',
+            audio_file: null,
+            summary: null,
+            user_id: '',
+            created_at: '',
+            updated_at: ''
           },
         }),
       pauseRecording: () =>
@@ -58,12 +64,12 @@ export const useRecordingStore = create<RecordingState>()(
         }),
       addTranscriptSegment: (segment) =>
         set((state) => ({
-          currentRecording: state.currentRecording
-            ? {
-                ...state.currentRecording,
-                transcript: [...state.currentRecording.transcript, segment],
-              }
-            : null,
+          // currentRecording: state.currentRecording
+          //   ? {
+          //       ...state.currentRecording,
+          //       transcript: [...state.currentRecording.transcript, segment],
+          //     }
+          //   : null,
         })),
       updateRecordingTitle: (title) =>
         set((state) => ({

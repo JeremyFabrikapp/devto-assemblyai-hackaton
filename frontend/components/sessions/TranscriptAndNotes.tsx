@@ -4,27 +4,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { FileText } from "lucide-react";
-import { Note } from "@/types/database";
-
-interface TranscriptSegment {
-  id: number;
-  speaker: string;
-  text: string;
-  timestamp: string;
-}
-
-interface GeneratedNote {
-  id: number;
-  instruction: string;
-  content: string;
-  timestamp: string;
-}
-
-interface TranscriptAndNotesProps {
-  words?: TranscriptSegment[];
-  transcript: string;
-  generatedNotes: Note[];
-}
+import { Note, TranscriptAndNotesProps } from "@/types/database";
 
 export function TranscriptAndNotes({
   transcript,

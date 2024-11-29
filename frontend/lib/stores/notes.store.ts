@@ -1,8 +1,8 @@
 "use client";
 
+import { Note } from '@/types/database';
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
-import { Note } from '../types';
 
 interface NoteState {
   notes: Note[];
@@ -35,7 +35,7 @@ export const useNoteStore = create<NoteState>()(
       toggleStar: (id) =>
         set((state) => ({
           notes: state.notes.map((note) =>
-            note.id === id ? { ...note, isStarred: !note.isStarred } : note
+            note.id === id ? { ...note, is_starred: !note.is_starred } : note
           ),
         })),
     }),

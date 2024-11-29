@@ -8,12 +8,7 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { Separator } from '@/components/ui/separator';
 import { useToast } from '@/components/ui/use-toast';
 
-interface TranscriptSegment {
-  id: number;
-  speaker: string;
-  text: string;
-  timestamp: string;
-}
+
 
 export default function TranscribePage() {
   const [isRecording, setIsRecording] = useState(false);

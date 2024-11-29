@@ -3,19 +3,8 @@
 import { Card, CardContent } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
+import { TranscriptViewProps } from "@/lib/types";
 
-interface TranscriptSegment {
-  id: number;
-  speaker: string;
-  text: string;
-  timestamp: string;
-  confidence: number;
-}
-
-interface TranscriptViewProps {
-  transcript: string;
-  words?: TranscriptSegment[];
-}
 
 export default function TranscriptView({ transcript }: TranscriptViewProps) {
   return (

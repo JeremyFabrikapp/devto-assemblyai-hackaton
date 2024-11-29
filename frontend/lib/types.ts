@@ -9,13 +9,28 @@
 //     audioFile: string;
 // }
 
-// export interface TranscriptSegment {
-//     id: number;
-//     speaker: string;
-//     text: string;
-//     timestamp: string;
-//     confidence: number;
-// }
+
+export interface TranscriptSegment {
+    id: number;
+    speaker: string;
+    text: string;
+    timestamp: string;
+    confidence: number;
+}
+
+export interface SessionInfoProps {
+    isRecording: boolean;
+    isPaused: boolean;
+    duration: number;
+    transcript: TranscriptSegment[];
+    formatDuration: (seconds: number) => string;
+}
+
+export interface TranscriptViewProps {
+    transcript: string;
+    words?: TranscriptSegment[];
+}
+
 
 // export interface GeneratedNote {
 //     id: number;
@@ -43,3 +58,5 @@
 //     transcript: TranscriptSegment[];
 //     status: 'recording' | 'paused' | 'completed';
 // }
+
+export {}
