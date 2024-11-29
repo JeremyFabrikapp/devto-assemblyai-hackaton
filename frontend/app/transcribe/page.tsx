@@ -7,6 +7,7 @@ import { Mic, MicOff, Pause, Play, Save } from 'lucide-react';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Separator } from '@/components/ui/separator';
 import { useToast } from '@/components/ui/use-toast';
+import { TranscriptSegment } from '@/lib/types';
 
 
 
