@@ -1,8 +1,8 @@
 "use client";
 
+import { Session } from '@/types/database';
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
-import { Session } from '../types';
 
 interface SessionState {
   sessions: Session[];

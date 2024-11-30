@@ -1,14 +1,15 @@
-const nodeExternals = require('webpack-node-externals');
+const nodeExternals = require("webpack-node-externals");
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  output: 'export',
+  output: "standalone",
   eslint: {
     ignoreDuringBuilds: true,
   },
-  experimental: {
-    serverActions: true,
-  },
+  assetPrefix: "/",
+  // experimental: {
+  //   serverActions: true,
+  // },
   // webpack: (config, { isServer }) => {
   //   if (!isServer) {
   //     // config.target = "node"
@@ -20,6 +21,4 @@ const nextConfig = {
   images: { unoptimized: true },
 };
 
-
 module.exports = nextConfig;
-

@@ -14,48 +14,53 @@ import {
   questionAnswer,
   transcribe,
 } from "@/app/actions/transcribe";
+import { Note, Session } from "@/types/database";
+import {
+  generateDownloadLink,
+  getMediaFromSession,
+  getStorageFileAsAdmin,
+} from "@/providers/supabase/cloudStorage";
+import { createNote, getRecordingById, getSessionNotes } from "@/app/actions/database";
 // import { transcribeAudio } from '@/provider/assemblyai/api';
 
 interface SessionDetailProps {
-  id: string;
+  session: Session;
 }
 
-interface GeneratedNote {
-  id: number;
-  instruction: string;
-  content: string;
-  timestamp: string;
-}
 
-// Mock session data
-const mockSession = {
-  id: "1",
-  title: "Mock Session",
-  // audioFile: 'http://localhost:3000/audio/sports_injuries.mp3',
-  audioFile:
-    "https://storage.googleapis.com/aai-docs-samples/sports_injuries.mp3",
-  transcript: [
-    {
-      id: 1,
-      speaker: "Speaker 1",
-      text: "This is a mock transcript.",
-      timestamp: "00:00:00",
-    },
-    {
-      id: 2,
-      speaker: "Speaker 2",
-      text: "It simulates a real session.",
-      timestamp: "00:00:05",
-    },
-  ],
-};
+export default function SessionDetail({ session }: SessionDetailProps) {
+  const [generatedNotes, setGeneratedNotes] = useState<Note[]>([]);
 
-export default function SessionDetail({ id }: SessionDetailProps) {
-  const [generatedNotes, setGeneratedNotes] = useState<GeneratedNote[]>([]);
-  const [transcript, setTranscript] = useState(mockSession.transcript);
-  const session =
-    useSessionStore((state) => state.sessions.find((s) => s.id === id)) ||
-    mockSession;
+  const loadSessionNotes = async () => {
+    try {
+      const notes = await getSessionNotes(session.id);
+      setGeneratedNotes(notes);
+      console.log("Loaded session notes:", notes);
+    } catch (error) {
+      console.error("Error loading session notes:", error);
+    }
+  };
+
+  useEffect(() => {
+    loadSessionNotes();
+  }, [session.id]);
+
+  useEffect(() => {
+    const fetchRecording = async () => {
+      try {
+        const recording = await getRecordingById(session.recording_id);
+        console.log("Fetched audio file:", recording?.transcript?.text);
+        setTranscript(recording?.transcript);
+        // setTranscript(recording?.transcript.text);
+      } catch (error) {
+        console.error("Error fetching recording:", error);
+      }
+    };
+
+    fetchRecording();
+  }, [session.id]);
+  const [transcript, setTranscript] = useState<any>({});
+ 
 
   const [isTranscribing, setIsTranscribing] = useState(false);
   const [transcriptionError, setTranscriptionError] = useState<string | null>(
@@ -80,33 +85,33 @@ export default function SessionDetail({ id }: SessionDetailProps) {
     }
   };
 
-  useEffect(() => {
-    const fetchTranscript = async () => {
-      setIsTranscribing(true);
-      setTranscriptionError(null);
-      try {
-        const result = await transcribe(session.audioFile);
-        console.log("Transcription result:", result);
-        // await handleAskQuestion(result.id);
-        if (result && result.words) {
-          const formattedTranscript = result.words.map((word, index) => ({
-            id: index,
-            speaker: word.speaker || "Unknown",
-            text: word.text,
-            timestamp: `${word.start}`,
-          }));
-          setTranscript(formattedTranscript);
-        }
-      } catch (error) {
-        console.error("Error fetching transcript:", error);
-        setTranscriptionError("Failed to transcribe audio. Please try again.");
-      } finally {
-        setIsTranscribing(false);
-      }
-    };
+  // useEffect(() => {
+  //   const fetchTranscript = async () => {
+  //     setIsTranscribing(true);
+  //     setTranscriptionError(null);
+  //     try {
+  //       const result = await transcribe(session.audioFile);
+  //       console.log("Transcription result:", result);
+  //       // await handleAskQuestion(result.id);
+  //       if (result && result.words) {
+  //         const formattedTranscript = result.words.map((word, index) => ({
+  //           id: index,
+  //           speaker: word.speaker || "Unknown",
+  //           text: word.text,
+  //           timestamp: `${word.start}`,
+  //         }));
+  //         setTranscript(formattedTranscript);
+  //       }
+  //     } catch (error) {
+  //       console.error("Error fetching transcript:", error);
+  //       setTranscriptionError("Failed to transcribe audio. Please try again.");
+  //     } finally {
+  //       setIsTranscribing(false);
+  //     }
+  //   };
 
-    fetchTranscript();
-  }, [session.audioFile]);
+  //   fetchTranscript();
+  // }, [session.audioFile]);
 
   // const { transcribeAudio, isLoading, error } = useAssembly();
 
@@ -138,36 +143,72 @@ export default function SessionDetail({ id }: SessionDetailProps) {
   // if (error) {
   //   return <div>Error: {error}</div>;
   // }
+  const [downloadLink, setDownloadLink] = useState<string | null>(null);
 
-  const generateNote = async (instruction: string) => {
+  useEffect(() => {
+    const fetchDownloadLink = async () => {
+      try {
+        const media = await getMediaFromSession(session.id);
+        const link = await generateDownloadLink(media);
+        setDownloadLink(link);
+        console.log(`Download link for audio file: ${link}`);
+      } catch (error) {
+        console.error("Error generating download link:", error);
+      }
+    };
+
+    fetchDownloadLink();
+  }, [session.id]);
+
+  const generateNote = async (
+    transcriptId: string,
+    sessionId: string,
+    instruction: string
+  ) => {
     try {
-      const transcriptId = "b641e780-3df8-4fd0-a18c-0da9c687c595"; // Replace with actual transcript ID
-      const response = await lemurTask(transcriptId, instruction + `You must only return the output for the instruction, formatted as mdx. DO NOT ADD ANYTHING TO YOUR RESPONSE. The output will be used as is. DO NOT ADD MDX quotes, just the content inside.`);
-      const newNote: GeneratedNote = {
-        id: Date.now(),
-        instruction,
-        content: response.response, // Assuming response has a content field
-        timestamp: new Date().toISOString(),
+      // const transcriptId = "b641e780-3df8-4fd0-a18c-0da9c687c595"; // Replace with actual transcript ID
+      const response = await lemurTask(
+        transcriptId,
+        instruction +
+          `You must only return the output for the instruction, formatted as mdx. DO NOT ADD ANYTHING TO YOUR RESPONSE. The output will be used as is. DO NOT ADD MDX quotes, just the content inside.`
+      );
+      const newNote: Partial<Note> = {
+        generation_instruction: instruction,
+        content: response.response,
+
+        title: "",
+        summary: null,
+        session_id: sessionId,
+        tags: [],
+        is_starred: false,
+
+        is_generated: true,
       };
-      setGeneratedNotes([...generatedNotes, newNote]);
+      const savedNote = await createNote(newNote);
+      console.log("Note saved successfully:", savedNote);
+      setGeneratedNotes([...generatedNotes, savedNote]);
     } catch (error) {
       console.error("Error generating note:", error);
       // Handle error appropriately, e.g., show a notification to the user
     }
   };
+
   const handleGenerateNote = async (instruction: string) => {
-    await generateNote(instruction);
+    generateNote(transcript.id, session.id, instruction).catch((error) => {
+      console.error("Error generating note:", error);
+      // Handle error appropriately, e.g., show a notification to the user
+    });
   };
 
   return (
     <div className="container mx-auto py-8">
-      <SessionHeader id={id} />
+      <SessionHeader id={session.id} />
 
       <div className="grid grid-cols-3 gap-8">
         <div className="col-span-2 space-y-8">
-          <AudioPlayer audioFile={session.audioFile} />
+          {downloadLink && <AudioPlayer audioFile={downloadLink} />}
           <TranscriptAndNotes
-            transcript={transcript}
+            transcript={transcript?.text}
             generatedNotes={generatedNotes}
           />
         </div>

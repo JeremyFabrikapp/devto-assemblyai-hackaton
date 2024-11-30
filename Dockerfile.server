@@ -1,0 +1,23 @@
+# Use an official Node runtime as the base image
+FROM node:20-alpine
+
+# Install ffmpeg
+RUN apk add --no-cache ffmpeg
+
+# Set the working directory in the container
+WORKDIR /app
+
+# Copy package.json and package-lock.json (if available) from the server folder
+COPY server/package*.json ./
+
+# Install dependencies
+RUN npm install
+
+# Copy the rest of the application code from the server folder
+COPY server ./
+
+# The application will listen on the port provided by Cloud Run
+# No need to explicitly expose a port
+
+# Start the application, using the port provided by Cloud Run
+CMD ["sh", "-c", "npm run start -- -p $PORT"]

@@ -4,6 +4,7 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
+    "zip": "zip -r chrome-tab-record.zip ./chrome-tab-record",
     "dev": "vite",
     "build": "vite build",
     "lint": "eslint .",

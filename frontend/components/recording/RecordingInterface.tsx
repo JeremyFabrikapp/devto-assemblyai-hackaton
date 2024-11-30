@@ -25,14 +25,8 @@ import RecordingControls from './RecordingControls';
 import RecordingSettings from './RecordingSettings';
 import SessionInfo from './SessionInfo';
 import NoteGeneration from './NoteGeneration';
+import { TranscriptSegment } from '@/lib/types';
 
-interface TranscriptSegment {
-  id: number;
-  speaker: string;
-  text: string;
-  timestamp: string;
-  confidence: number;
-}
 
 interface GeneratedNote {
   id: number;

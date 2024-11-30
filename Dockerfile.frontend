@@ -1,0 +1,35 @@
+# Use an official Node runtime as the base image
+FROM node:20-alpine
+
+# Install tsx command
+RUN npm install -g tsx
+
+# Set the working directory in the container
+WORKDIR /app
+
+# Copy package.json and package-lock.json (if available) from the frontend folder
+COPY frontend/package*.json ./
+
+# Install dependencies
+RUN npm install
+
+# Copy the rest of the application code from the frontend folder
+COPY frontend ./
+
+# Copy all env files
+COPY frontend/.env* ./
+
+# Build the Next.js app
+RUN npm run build
+
+# Copy static files to standalone directory
+RUN cp -R .next/static .next/standalone/.next/static
+
+# Copy public folder to standalone directory
+RUN cp -R public .next/standalone/public
+
+# The application will listen on the port provided by Cloud Run
+# No need to explicitly expose a port
+
+# Start the application, using the port provided by Cloud Run
+CMD ["sh", "-c", "node .next/standalone/server.js -- -p $PORT"]

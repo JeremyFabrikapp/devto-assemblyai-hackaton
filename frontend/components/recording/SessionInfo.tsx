@@ -1,22 +1,10 @@
 "use client";
 
 import { Card, CardContent } from '@/components/ui/card';
+import { SessionInfoProps } from '@/lib/types';
 
-interface TranscriptSegment {
-  id: number;
-  speaker: string;
-  text: string;
-  timestamp: string;
-  confidence: number;
-}
 
-interface SessionInfoProps {
-  isRecording: boolean;
-  isPaused: boolean;
-  duration: number;
-  transcript: TranscriptSegment[];
-  formatDuration: (seconds: number) => string;
-}
+
 
 export default function SessionInfo({
   isRecording,

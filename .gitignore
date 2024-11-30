@@ -1,1 +1,6 @@
 server/_transcript.txt
+server/audio_files/*
+!server/audio_files/.gitkeep
+server/session_info/*
+!server/session_info/.gitkeep
+server/_transcript.txt
